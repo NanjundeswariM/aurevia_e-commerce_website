@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 function Clothing() {
   const [clothing, setClothing] = useState([]);
   const navigate = useNavigate();
+
   useEffect(() => {
-    fetch("http://localhost:3000/clothing")
+    fetch("/db.json")
       .then((res) => res.json())
-      .then((data) => setClothing(data))
+      .then((data) => setClothing(data.clothing))
       .catch((err) => console.log(err));
   }, []);
+
   return (
     <div className="container mt-4">
       <h4 className="mb-3">Clothing</h4>
+
       <div
         className="d-flex overflow-auto gap-3 pb-2"
         style={{ scrollSnapType: "x mandatory" }}
@@ -20,25 +24,40 @@ function Clothing() {
           <div
             key={item.id}
             className="card flex-shrink-0 shadow-sm"
-            style={{ width: "220px", scrollSnapAlign: "start", cursor: "pointer"}}
-            onClick={()=>navigate(`/product//${item.id}`)}
+            style={{
+              width: "220px",
+              scrollSnapAlign: "start",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              navigate(`/product/clothing/${item.id}`)
+            }
           >
             <img
               src={item.image}
               className="card-img-top"
               alt={item.name}
-              style={{ height: "280px", objectFit: "cover" }}
+              style={{
+                height: "280px",
+                objectFit: "cover",
+              }}
             />
+
             <div className="card-body p-2">
-              <h6 className="mb-1 text-truncate">{item.name}</h6>
+              <h6 className="mb-1 text-truncate">
+                {item.name}
+              </h6>
+
               <p className="mb-1 text-success fw-bold">
                 ₹{item.price}{" "}
+
                 {item.oldPrice && (
                   <small className="text-muted text-decoration-line-through ms-1">
                     ₹{item.oldPrice}
                   </small>
                 )}
               </p>
+
               <small className="text-muted">
                 ⭐ {item.rating} ({item.reviews})
               </small>
@@ -54,7 +73,7 @@ function Clothing() {
             cursor: "pointer",
             borderRadius: "8px",
           }}
-          onClick={()=>navigate('/clothing')}
+          onClick={() => navigate("/clothing")}
         >
           →
         </div>

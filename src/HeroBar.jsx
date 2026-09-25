@@ -3,67 +3,102 @@ import { useNavigate } from "react-router-dom";
 import { CartContext } from "./context/CartContext";
 import { WishlistContext } from "./context/WishlistContext";
 import logo from "./assets/logo.jpg";
+
 function HeroBar() {
   const navigate = useNavigate();
+
   const { cartItems } = useContext(CartContext);
   const { wishlistItems } = useContext(WishlistContext);
+
   const cartCount = cartItems.reduce(
     (total, item) => total + item.quantity,
     0
   );
+
   const [loginOpen, setLoginOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [results, setResults] = useState([]);
+
   const searchRef = useRef(null);
+
+  // Load all products from db.json
   useEffect(() => {
-    Promise.all([
-      fetch("http://localhost:3000/dresses").then((res) => res.json()),
-      fetch("http://localhost:3000/clothing").then((res) => res.json()),
-      fetch("http://localhost:3000/cosmetics").then((res) => res.json()),
-      fetch("http://localhost:3000/footwear").then((res) => res.json()),
-      fetch("http://localhost:3000/accessories").then((res) => res.json()),
-      fetch("http://localhost:3000/skincare").then((res) => res.json()),
-      fetch("http://localhost:3000/haircare").then((res) => res.json()),
-    ]).then(
-      ([
-        dresses,
-        clothing,
-        cosmetics,
-        footwear,
-        accessories,
-        skincare,
-        haircare,
-      ]) => {
+    fetch("/db.json")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load products");
+        }
+        return res.json();
+      })
+      .then((data) => {
         const allProducts = [
-          ...dresses.map((p) => ({ ...p, routeCategory: "dresses" })),
-          ...clothing.map((p) => ({ ...p, routeCategory: "clothing" })),
-          ...cosmetics.map((p) => ({ ...p, routeCategory: "cosmetics" })),
-          ...footwear.map((p) => ({ ...p, routeCategory: "footwear" })),
-          ...accessories.map((p) => ({
+          ...(data.dresses || []).map((p) => ({
+            ...p,
+            routeCategory: "dresses",
+          })),
+
+          ...(data.clothing || []).map((p) => ({
+            ...p,
+            routeCategory: "clothing",
+          })),
+
+          ...(data.cosmetics || []).map((p) => ({
+            ...p,
+            routeCategory: "cosmetics",
+          })),
+
+          ...(data.footwear || []).map((p) => ({
+            ...p,
+            routeCategory: "footwear",
+          })),
+
+          ...(data.accessories || []).map((p) => ({
             ...p,
             routeCategory: "accessories",
           })),
-          ...skincare.map((p) => ({ ...p, routeCategory: "skincare" })),
-          ...haircare.map((p) => ({ ...p, routeCategory: "haircare" })),
+
+          ...(data.skincare || []).map((p) => ({
+            ...p,
+            routeCategory: "skincare",
+          })),
+
+          ...(data.haircare || []).map((p) => ({
+            ...p,
+            routeCategory: "haircare",
+          })),
+
+          ...(data["new-arrivals"] || []).map((p) => ({
+            ...p,
+            routeCategory: "new-arrivals",
+          })),
         ];
+
         setProducts(allProducts);
-      }
-    );
+      })
+      .catch((err) => console.log(err));
   }, []);
+
+  // Search products
   useEffect(() => {
     if (search.trim() === "") {
       setResults([]);
       return;
     }
+
+    const searchText = search.toLowerCase();
+
     const filtered = products.filter(
       (item) =>
-        item.name.toLowerCase().includes(search.toLowerCase()) ||
-        item.category.toLowerCase().includes(search.toLowerCase())
+        item.name?.toLowerCase().includes(searchText) ||
+        item.category?.toLowerCase().includes(searchText)
     );
+
     setResults(filtered.slice(0, 5));
   }, [search, products]);
+
+  // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -73,13 +108,16 @@ function HeroBar() {
         setResults([]);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
+
     return () =>
       document.removeEventListener(
         "mousedown",
         handleClickOutside
       );
   }, []);
+
   return (
     <nav
       className="navbar navbar-expand-lg bg-white shadow-sm fixed-top px-3"
@@ -87,6 +125,7 @@ function HeroBar() {
     >
       <div className="container-fluid">
 
+        {/* Logo */}
         <img
           src={logo}
           alt="Logo"
@@ -98,6 +137,8 @@ function HeroBar() {
           }}
           onClick={() => navigate("/")}
         />
+
+        {/* Mobile menu button */}
         <button
           className="navbar-toggler"
           type="button"
@@ -106,10 +147,13 @@ function HeroBar() {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
+
         <div
           className="collapse navbar-collapse"
           id="heroNavbar"
         >
+
+          {/* Search */}
           <div
             ref={searchRef}
             className="position-relative mx-lg-4 my-3 my-lg-0 flex-grow-1"
@@ -118,6 +162,7 @@ function HeroBar() {
               <span className="input-group-text bg-white border-end-0">
                 <i className="bi bi-search"></i>
               </span>
+
               <input
                 className="form-control border-start-0"
                 placeholder="Search for Products, Brands and More"
@@ -125,6 +170,7 @@ function HeroBar() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+
             {results.length > 0 && (
               <div
                 className="position-absolute bg-white shadow rounded w-100 mt-1"
@@ -143,6 +189,7 @@ function HeroBar() {
                       navigate(
                         `/product/${item.routeCategory}/${item.id}`
                       );
+
                       setSearch("");
                       setResults([]);
                     }}
@@ -154,6 +201,7 @@ function HeroBar() {
                       height="50"
                       style={{ objectFit: "cover" }}
                     />
+
                     <div className="ms-3">
                       <div>{item.name}</div>
                       <small>₹{item.price}</small>
@@ -163,7 +211,11 @@ function HeroBar() {
               </div>
             )}
           </div>
+
+          {/* Navigation */}
           <ul className="navbar-nav ms-auto align-items-lg-center">
+
+            {/* Login */}
             <li
               className="nav-item dropdown"
               onMouseEnter={() => setLoginOpen(true)}
@@ -178,6 +230,7 @@ function HeroBar() {
                 <i className="bi bi-person-circle me-1"></i>
                 Login
               </a>
+
               <ul className="dropdown-menu">
                 <li>
                   <h6 className="dropdown-header">
@@ -190,9 +243,11 @@ function HeroBar() {
                     </span>
                   </h6>
                 </li>
+
                 <li>
                   <hr className="dropdown-divider" />
                 </li>
+
                 <li>
                   <button
                     className="dropdown-item"
@@ -202,12 +257,14 @@ function HeroBar() {
                     My Profile
                   </button>
                 </li>
+
                 <li>
                   <button className="dropdown-item">
                     <i className="bi bi-box me-2"></i>
                     Orders
                   </button>
                 </li>
+
                 <li>
                   <button
                     className="dropdown-item"
@@ -219,6 +276,8 @@ function HeroBar() {
                 </li>
               </ul>
             </li>
+
+            {/* More */}
             <li
               className="nav-item dropdown ms-lg-3"
               onMouseEnter={() => setMoreOpen(true)}
@@ -232,17 +291,20 @@ function HeroBar() {
               >
                 More
               </a>
+
               <ul className="dropdown-menu">
                 <li>
                   <button className="dropdown-item">
                     Become Seller
                   </button>
                 </li>
+
                 <li>
                   <button className="dropdown-item">
                     Customer Care
                   </button>
                 </li>
+
                 <li>
                   <button className="dropdown-item">
                     Notification Settings
@@ -250,6 +312,8 @@ function HeroBar() {
                 </li>
               </ul>
             </li>
+
+            {/* Wishlist */}
             <li className="nav-item ms-lg-3">
               <button
                 className="btn btn-link text-dark text-decoration-none fw-semibold"
@@ -259,6 +323,8 @@ function HeroBar() {
                 Wishlist ({wishlistItems.length})
               </button>
             </li>
+
+            {/* Cart */}
             <li className="nav-item ms-lg-2">
               <button
                 className="btn btn-link text-dark text-decoration-none fw-semibold"
@@ -268,6 +334,7 @@ function HeroBar() {
                 Cart ({cartCount})
               </button>
             </li>
+
           </ul>
         </div>
       </div>

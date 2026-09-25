@@ -10,9 +10,9 @@ function Haircare() {
   });
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:3000/haircare")
+    fetch("/db.json")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
+      .then((data) => setProducts(data.haircare))
       .catch((err) => console.log(err));
   }, []);
   const filteredProducts = products.filter((p) => {

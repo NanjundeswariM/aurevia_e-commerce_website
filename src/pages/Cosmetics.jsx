@@ -10,9 +10,9 @@ function Cosmetics() {
   });
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:3000/cosmetics")
+    fetch("/db.json")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
+      .then((data) => setProducts(data.cosmetics))
       .catch((err) => console.log(err));
   }, []);
   const filteredProducts = products.filter((p) => {

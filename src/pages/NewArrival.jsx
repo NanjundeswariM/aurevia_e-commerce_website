@@ -4,11 +4,11 @@ function NewArrival() {
   const [products, setProducts] = useState([])
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:3000/new-arrivals")
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.log(err))
-  }, [])
+    fetch("/db.json")
+      .then((res) => res.json())
+      .then((data) => setProducts(data["new-arrivals"]))
+      .catch((err) => console.log(err));
+  }, []);
   return (
     <div className='container pt-4 mt-3 mb-4'>
       <div className='d-flex justify-content-center align-items-center flex-column gap-2 mb-3'>

@@ -10,9 +10,9 @@ function Footwear() {
   });
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:3000/footwear")
+    fetch("/db.json")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
+      .then((data) => setProducts(data.footwear))
       .catch((err) => console.log(err));
   }, []);
   const filteredProducts = products.filter((p) => {
